@@ -615,4 +615,3 @@ if filereadable(expand('~/.vim/settings.vim'))
   source ~/.vim/settings.vim
 endif
 
-let g:ycm_path_to_python_interpreter = '/usr/local/Cellar/python/2.7.10_2/Frameworks/Python.framework/Versions/Current/bin/python'

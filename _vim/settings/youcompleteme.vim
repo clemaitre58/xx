@@ -1,3 +1,6 @@
+" Force the python ycm_path_to_python_interpreter
+let g:ycm_path_to_python_interpreter = '/usr/local/Cellar/python/2.7.10_2/Frameworks/Python.framework/Versions/Current/bin/python'
+
 " When this option is set to '1', YCM's identifier completer will also
 " collect identifiers from tags files.
 let g:ycm_collect_identifiers_from_tags_files = 1
@@ -22,7 +25,7 @@ let g:ycm_min_num_of_chars_for_completion = 2
 let g:ycm_seed_identifiers_with_syntax = 1
 
 " Don't create mapping for showing diagnostic text
-let g:ycm_key_detailed_diagnostics = ''
+" let g:ycm_key_detailed_diagnostics = ''
 
 " Turn off YCM's diagnostic display features (clutters vim gutter)
 let g:ycm_show_diagnostics_ui = 0

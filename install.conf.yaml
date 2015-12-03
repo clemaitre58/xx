@@ -4,3 +4,4 @@
     # ~/.dotfiles: ''
     ~/.vim: _vim
     ~/.vimrc: _vimrc
+    ~/.ycm_extra_conf.py: _ycm_extra_conf.py
