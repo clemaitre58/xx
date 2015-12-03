@@ -2,4 +2,5 @@
 
 - link:
     # ~/.dotfiles: ''
+    ~/.vim: _vim
     ~/.vimrc: _vimrc
