@@ -4,7 +4,7 @@ Plug 'kana/vim-arpeggio'
 Plug 'guns/jellyx.vim'
 
 Plug 'vim-scripts/indentpython.vim'
-Plug 'Valloric/YouCompleteMe'
+" Plug 'Valloric/YouCompleteMe'
 Plug 'scrooloose/syntastic'
 Plug 'nvie/vim-flake8'
 Plug 'tpope/vim-fugitive'
