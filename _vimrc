@@ -20,16 +20,52 @@ set nocompatible
 " set mapleader from backslash to comma
 let mapleader=","
 
+" map ; to :
+nnoremap ; :
+vnoremap ; :
+
+" turn off F1 help shortcut
+inoremap <F1> <nop>
+nnoremap <F1> <nop>
+vnoremap <F1> <nop>
+
+" turn off manual key
+nnoremap K <nop>
+vnoremap K <nop>
+
+" never use ZZ, too dangerous
+nnoremap ZZ <nop>
+
 " disable <C-A>, interferes with tmux prefix
 noremap <C-A> <nop>
 inoremap <C-A> <nop>
 
+" Ctrl-Q to quit
+nnoremap <C-Q> :qall<CR>
+cnoremap <C-Q> <C-C>:qall<CR>
+inoremap <C-Q> <C-O>:qall<CR>
+vnoremap <C-Q> <ESC>:qall<CR>
+
+" hide intro screen, use all abbreviations, omit redundant messages
+set shortmess=aIoO
+
+" turn on mouse in all modes
+if has('mouse')
+  set mouse=a
+  set mousemodel=popup_setpos
+endif
 
 " use utf-8 character encoding
 set encoding=utf-8
 
 " flush file to disk after writing for protection against data loss
 set nofsync
+
+" prefer blowfish2 encryption method
+silent! set cryptmethod=blowfish2
+
+" don't show active mode on last line, lightline has this covered
+set noshowmode
 
 
 " -----------------------------------------------------------------------------
@@ -40,12 +76,12 @@ if filereadable(expand('~/.vim/plugs.vim'))
 endif
 
 
-" " -----------------------------------------------------------------------------
-" " Functions
+" -----------------------------------------------------------------------------
+" Functions
 
-" if filereadable(expand('~/.vim/functions.vim'))
-"   source ~/.vim/functions.vim
-" endif
+if filereadable(expand('~/.vim/functions.vim'))
+  source ~/.vim/functions.vim
+endif
 
 
 " -----------------------------------------------------------------------------
@@ -82,6 +118,41 @@ set ttimeoutlen=50
 " greatly restrict local .vimrc and .exrc files
 set secure
 
+" disable modelines, use securemodelines.vim instead
+set nomodeline
+let g:secure_modelines_allowed_items = [
+            \ "expandtab", "et", "noexpandtab", "noet",
+            \ "filetype", "ft",
+            \ "foldlevel", "fdl",
+            \ "foldmarker", "fmr",
+            \ "foldmethod", "fdm",
+            \ "rightleft", "rl", "norightleft", "norl",
+            \ "shiftwidth", "sw",
+            \ "softtabstop", "sts",
+            \ "tabstop", "ts",
+            \ "textwidth", "tw"
+            \ ]
+
+" switching buffers
+set switchbuf=useopen,usetab,newtab
+"             |       |      |
+"             |       |      +-------- Prefer opening quickfix windows in new tabs
+"             |       +--------------- Consider windows in other tab pages wrt useopen
+"             +----------------------- Jump to the first open window that contains the specified buffer if there is one
+
+" do not consider octal numbers for C-A/C-X
+set nrformats-=octal
+
+" configure viminfo then read from it
+set viminfo='100,<50,s10,h,!
+"           |    |   |   | |
+"           |    |   |   | +--- Save and restore all-uppercase global variables
+"           |    |   |   +----- Don't restore hlsearch on startup
+"           |    |   +--------- Exclude registers greater than N Kb
+"           |    +------------- Keep N lines for each register
+"           +------------------ Keep marks for N files
+rviminfo
+
 " make directories if necessary
 if !isdirectory(expand(&backupdir))
   call mkdir(expand(&backupdir), "p")
@@ -115,14 +186,144 @@ endif
 
 " }}}
 
+" gvim {{{
+
+if has('gui_running')
+  " no menu bar
+  set guioptions-=m
+  " no toolbar
+  set guioptions-=T
+  " no right-hand scrollbar
+  set guioptions-=r
+  set guioptions-=R
+  " no left-hand scrollbar
+  set guioptions-=l
+  set guioptions-=L
+  " use console style tabbed interface
+  set guioptions-=e
+  " use console dialogs instead of popups
+  set guioptions+=c
+  " use lightline-compatible monaco
+  set guifont=Monaco\ for\ Powerline\ 16
+  " allow gvim window to occupy whole screen
+  set guiheadroom=0
+  " jellyx
+  set t_Co=256
+  colorscheme jellyx
+  " set normal mode cursor to unblinking Cursor highlighted block
+  set guicursor+=n:blinkon0-block-Cursor
+  " set insert and command line mode cursor to 25% width unblinking iCursor highlighted block
+  set guicursor+=i-c:blinkon0-ver25-iCursor
+  " set visual mode cursor to unblinking vCursor highlighted block
+  set guicursor+=v:blinkon0-block-vCursor
+  " set replace mode cursor to unblinking rCursor highlighted block
+  set guicursor+=r:blinkon0-block-rCursor
+  " set operator pending mode cursor to 50% height unblinking oCursor highlighted block
+  set guicursor+=o:blinkon0-hor50-oCursor
+  " no visual bell
+  if has('autocmd')
+    augroup errorbells
+      autocmd!
+      autocmd GUIEnter * set vb t_vb=
+    augroup END
+  endif
+  " resize font
+  noremap <silent> <M--> :Smaller<CR>
+  noremap <silent> <M-+> :Bigger<CR>
+  " paste selection with <S-Ins>
+  inoremap <S-Insert> <MiddleMouse>
+  cnoremap <S-Insert> <MiddleMouse>
+endif
+
+" }}}
+
+" highlighting {{{
+
+" searches
+highlight clear Search
+highlight Search term=bold cterm=bold ctermfg=0 ctermbg=191 gui=bold guifg=black guibg=#DFFF5F
+highlight clear IncSearch
+highlight IncSearch term=bold cterm=bold ctermfg=0 ctermbg=214 gui=bold guifg=black guibg=#FFAF00
+
+" matching parens
+highlight clear MatchParen
+highlight MatchParen term=bold,NONE cterm=bold,NONE ctermfg=179 gui=bold,NONE guifg=#D7AF5F
+
+" cursor
+highlight clear Cursor
+highlight Cursor guifg=black guibg=gray
+highlight clear iCursor
+highlight iCursor guifg=white guibg=#FFFFAF
+highlight clear vCursor
+highlight vCursor guifg=white guibg=#5F5F87
+highlight clear rCursor
+highlight rCursor guifg=black guibg=#CF6A4C
+highlight clear oCursor
+highlight oCursor guifg=black guibg=gray
+
+" error, warning and mode messages
+highlight clear Error
+highlight Error ctermfg=gray ctermbg=NONE guifg=gray guibg=NONE
+highlight clear ErrorMsg
+highlight ErrorMsg ctermfg=gray ctermbg=NONE guifg=gray guibg=NONE
+highlight clear WarningMsg
+highlight ErrorMsg ctermfg=gray ctermbg=NONE guifg=gray guibg=NONE
+highlight clear ModeMsg
+highlight ModeMsg ctermfg=gray ctermbg=NONE guifg=gray guibg=NONE
+
+" question and more messages
+highlight clear Question
+highlight Question term=standout ctermfg=179 gui=bold guifg=#D7AF5F
+highlight clear MoreMsg
+highlight MoreMsg term=bold cterm=bold ctermfg=179 gui=bold guifg=#D7AF5F
+
+" directories
+highlight clear Directory
+highlight Directory term=bold cterm=bold ctermfg=110 gui=bold guifg=#87AFD7
+
+" spelling
+highlight clear SpellBad
+highlight SpellBad term=standout ctermfg=1 term=underline cterm=underline
+highlight clear SpellCap
+highlight SpellCap term=underline cterm=underline
+highlight clear SpellRare
+highlight SpellRare term=underline cterm=underline
+highlight clear SpellLocal
+highlight SpellLocal term=underline cterm=underline
+
+" }}}
+
+" show listchars {{{
+
+set nolist
+set listchars =tab:▷⋅
+set listchars+=extends:›
+set listchars+=precedes:‹
+set listchars+=nbsp:·
+set listchars+=trail:·
+
+" }}}
 
 " screen {{{
 
 " turn off syntax coloring of long lines
 set synmaxcol=1024
 
+" print current syntax item
+nnoremap <silent> <leader>sa :call SyntaxAttr()<CR>
+nnoremap <silent> <leader>si :echo SyntaxItem()<CR>
+
 " refresh screen
 nnoremap <silent> <leader>u :syntax sync fromstart<CR>:redraw!<CR>
+
+" readjust window sizing
+augroup autoresize
+  autocmd!
+  autocmd VimResized * :wincmd =
+augroup END
+
+" fix background color bleed in tmux / screen
+set t_ut=""
 
 " }}}
 
@@ -140,6 +341,13 @@ set fileformats=unix,dos,mac
 
 " always keep cursor in the same column if possible
 set nostartofline
+
+" enable virtual edit in visual block mode
+set virtualedit=block
+
+" no annoying error noises
+set noerrorbells
+set vb t_vb=
 
 " use a dialog when an operation has to be confirmed
 set confirm
@@ -168,11 +376,50 @@ set laststatus=2
 " don't highlight matching parens
 set noshowmatch
 
+" turn on wildmenu completion
+set wildmenu
+set wildmode=list:longest,full
+
+" disable some filetypes for completion
+" blocking possibly large directories that usually are
+" not of interest will speed up plugins like Command-T
+set wildignore+=*.o,*.obj,*.dll,*.pyc
+set wildignore+=*~,*.DS_Store
+set wildignore+=.git/*,.hg/*,.svn/*
+set wildignore+=*.gif,*.jpg,*.jpeg,*.png
+set wildignore+=*.class,*.jar
+set wildignore+=*.beam
+set wildignore+=*.hi,*.p_hi,*.p_o
+
+" give following files lower priority
+set suffixes+=.bak,~,.swp,.o,.info,.aux
+set suffixes+=.log,.dvi,.bbl,.blg,.brf
+set suffixes+=.cb,.ind,.idx,.ilg,.inx
+set suffixes+=.out,.toc,CVS/,tags
+
+" switch buffers without saving
+set hidden
+
+" vertical diffsplit by default
+set diffopt+=vertical
+
+" split windows below and to the right of the current
+set splitright
+set splitbelow
+
+" allow no height, no width windows
+set winminheight=0
+set winminwidth=0
+
 " write swap file every N characters
 set updatecount=20
 
 " do not redraw screen when executing macros
 set lazyredraw
+
+" indicates fast terminal connection
+set ttyfast
+set ttymouse=xterm2
 
 " generous backspacing
 set backspace=2
@@ -211,6 +458,23 @@ set shiftwidth=2
 " round indent to multiple of shiftwidth
 set shiftround
 
+" " jump between the following characters that form pairs
+" set matchpairs+=<:>
+" set matchpairs+=«:»
+" set matchpairs+=「:」
+
+" triple matching curly braces form a fold
+set foldmethod=marker
+
+" higher numbers close fewer folds, 0 closes all folds.
+set foldlevel=99
+
+" automatically open folds on these commands
+set foldopen=insert,mark,percent,tag,undo
+
+" deepest fold is 3 levels
+set foldnestmax=3
+
 " visually break lines
 set wrap
 
@@ -219,6 +483,9 @@ set number
 
 " minimum number of columns to use for the line number
 set numberwidth=1
+
+" don't autowrap text as it's being inserted
+set textwidth=0
 
 " insert N pixel lines between characters
 set linespace=1
@@ -242,6 +509,26 @@ set smartcase
 " adjust the case of the match depending on the typed text
 set infercase
 
+" save and restore session data
+set sessionoptions+=blank,buffers,curdir,folds
+"                   |     |       |      |
+"                   |     |       |      +------- Manually created folds, opened/closed folds, local fold options
+"                   |     |       +-------------- The current directory
+"                   |     +---------------------- Hidden and unloaded buffers
+"                   +---------------------------- Empty windows
+set sessionoptions+=globals,help,localoptions,options
+"                   |       |    |            |
+"                   |       |    |            +--------- All options and mappings, global values for local options
+"                   |       |    +---------------------- Options and mappings local to a window or buffer
+"                   |       +--------------------------- The help window
+"                   +----------------------------------- Global variables that start with an uppercase letter and contain at least one lowercase letter
+set sessionoptions+=resize,tabpages,winpos,winsize
+"                   |      |        |      |
+"                   |      |        |      +--------- Window sizes
+"                   |      |        +---------------- Position of the whole Vim window
+"                   |      +------------------------- All tab pages
+"                   +-------------------------------- Size of the Vim window
+
 " automatic formatting options
 set formatoptions=
 set formatoptions+=r " Automatically insert the current comment leader after <Enter> in insert mode
@@ -252,6 +539,19 @@ set formatoptions+=2 " Use the indent of the second line of a paragraph for the 
 set formatoptions+=l " Don't break long lines in insert mode
 set formatoptions+=1 " Don't break a line after a one-letter word
 set formatoptions+=j " Remove comment leader when joining two comments
+
+
+" -----------------------------------------------------------------------------
+" Searching
+
+" use ag/pt/ack for grepping if available
+if executable('ag')
+  set grepprg=ag\ --nogroup\ --nocolor\ --unrestricted
+elseif executable('pt')
+  set grepprg=pt\ --nogroup\ --nocolor
+elseif executable('ack')
+  set grepprg=ack\ --nogroup\ --nocolor
+endif
 
 
 " -----------------------------------------------------------------------------
@@ -281,7 +581,11 @@ nnoremap < <<
 nnoremap <silent> <leader>sc :set showcmd!<CR>
 
 " }}}
+" --- toggle virtualedit=all {{{
 
+nnoremap <silent> <leader><leader>v :let &virtualedit=&virtualedit=="block" ? "all" : "block" <Bar> set virtualedit?<CR>
+
+" }}}
 " --- don't move back the cursor one position when exiting insert mode {{{
 
 augroup cursorpos
@@ -292,7 +596,17 @@ augroup cursorpos
 augroup END
 
 " }}}
+" --- return to last edit position {{{
 
+augroup cursormem
+  autocmd!
+  autocmd BufReadPost *
+    \ if line("'\"") > 1 && line("'\"") <= line("$") |
+    \   exe "normal! g`\"" |
+    \ endif
+augroup END
+
+" }}}
 " --- search and replace {{{
 
 " turn off any existing search
@@ -313,7 +627,6 @@ nnoremap <leader>nv :noautocmd vim /
 nnoremap <silent> <leader><leader>h :let @/='\<<C-R>=expand("<cword>")<CR>\>'<CR>:set hls<CR>
 
 " }}}
-
 " --- pasting {{{
 
 " yank to end of line
@@ -332,7 +645,6 @@ noremap <leader>P "+P
 set pastetoggle=<F2>
 
 " }}}
-
 " --- formatting {{{
 
 " format visual selection with spacebar
@@ -390,6 +702,74 @@ nnoremap Q @q
 
 " }}}
 " --- words {{{
+
+" dictionary
+"set dictionary=/usr/share/dict/words
+
+" spelling
+let g:spellfile_URL = '/usr/share/vim/vimfiles/spell'
+if version >= 700
+  set spl=en spell
+  set spell
+endif
+
+" digraphs
+if has('digraphs')
+  " (฿) BTC
+  digraph B\| 3647
+  " (‘) curly left single quote
+  digraph Ql 8216
+  " (’) curly right single quote
+  digraph Qr 8217
+  " (“) curly left double quote
+  digraph ql 8220
+  " (”) curly right double quote
+  digraph qr 8221
+  " (…) ellipsis
+  digraph ., 8230
+  " (∈) equivalent to `(elem)`: http://doc.perl6.org/routine/%E2%88%88
+  digraph (- 8712
+  " (∉) equivalent to `!(elem)`: http://doc.perl6.org/routine/%E2%88%89
+  digraph (/ 8713
+  " (∋) equivalent to `(cont)`: http://doc.perl6.org/routine/%E2%88%8B
+  digraph -) 8715
+  " (∌) equivalent to `!(cont)`: http://doc.perl6.org/routine/%E2%88%8C
+  digraph /) 8716
+  " (∖) equivalent to `(-)`: http://doc.perl6.org/routine/%E2%88%96
+  digraph \\ 8726
+  " (∩) equivalent to `(&)`: http://doc.perl6.org/routine/%E2%88%A9
+  digraph (U 8745
+  " (∪) equivalent to `(|)`: http://doc.perl6.org/routine/%E2%88%AA
+  digraph )U 8746
+  " (≼) equivalent to `(<+)`: http://doc.perl6.org/routine/%E2%89%BC
+  digraph <+ 8828
+  " (≽) equivalent to `(+>)`: http://doc.perl6.org/routine/%E2%89%BD
+  digraph +> 8829
+  " (⊂) equivalent to `(<)`: http://doc.perl6.org/routine/%E2%8A%82
+  digraph (c 8834
+  " (⊃) equivalent to `(>)`: http://doc.perl6.org/routine/%E2%8A%83
+  digraph )c 8835
+  " (⊄) equivalent to `!(<)`: http://doc.perl6.org/routine/%E2%8A%84
+  digraph c/ 8836
+  " (⊅) equivalent to `!(>)`: http://doc.perl6.org/routine/%E2%8A%85
+  digraph \c 8837
+  " (⊆) equivalent to `(<=)`: http://doc.perl6.org/routine/%E2%8A%86
+  digraph (_ 8838
+  " (⊇) equivalent to `(>=)`: http://doc.perl6.org/routine/%E2%8A%87
+  digraph )_ 8839
+  " (⊈) equivalent to `!(<=)`: http://doc.perl6.org/routine/%E2%8A%88
+  digraph _/ 8840
+  " (⊉) equivalent to `!(>=)`: http://doc.perl6.org/routine/%E2%8A%89
+  digraph \_ 8841
+  " (⊍) equivalent to `(.)`: http://doc.perl6.org/routine/%E2%8A%8D
+  digraph U. 8845
+  " (⊎) equivalent to `(+)`: http://doc.perl6.org/routine/%E2%8A%8E
+  digraph U+ 8846
+  " (⊖) equivalent to `(^)`: http://doc.perl6.org/routine/%E2%8A%96
+  digraph 0- 8854
+endif
+
+" }}}
 
 " Lines
 " --- toggle {{{
@@ -597,6 +977,14 @@ noremap <leader>te :tabedit <C-R>=expand("%:p:h")<CR>/
 " allows typing :tabv myfile.txt to view the specified file in a new read-only tab
 cabbrev tabv tab sview +setlocal\ nomodifiable
 
+" press Shift-F12 to show all buffers in tabs, or to close all tabs
+let notabs = 0
+nnoremap <silent> <S-F12> :let notabs=!notabs<Bar>:if notabs<Bar>:tabo<Bar>:else<Bar>:tab ball<Bar>:tabn<Bar>:endif<CR>
+
+" show and hide tabline
+nnoremap <silent> <M-S-Up> :set showtabline=0<CR>
+nnoremap <silent> <M-S-Down> :set showtabline=1<CR>
+
 " }}}
 
 
@@ -614,4 +1002,3 @@ endif
 if filereadable(expand('~/.vim/settings.vim'))
   source ~/.vim/settings.vim
 endif
-

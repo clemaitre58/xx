@@ -10,8 +10,6 @@ let g:NERDTreeDirArrows = 1
 let g:NERDTreeChDirMode = 2
 let g:NERDTreeWinSize = 30
 let g:NERDTreeMapJumpFirstChild = 'gK'
-let NERDTreeIgnore=['\.pyc$', '\~$'] "ignore files in NERDTree
-
 nnoremap <silent> <F12> :NERDTreeToggle<CR>
 inoremap <silent> <F12> <C-O>:NERDTreeToggle<CR>
 vnoremap <silent> <F12> <ESC>:NERDTreeToggle<CR>gv
